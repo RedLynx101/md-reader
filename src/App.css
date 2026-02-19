@@ -1,0 +1,106 @@
+:root {
+  font-family: Inter, Segoe UI, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  background: #f8fafc;
+}
+
+:root[data-theme="dark"] .app-shell {
+  background: #020617;
+}
+
+.markdown-body {
+  background: transparent;
+  color: inherit;
+  max-width: 920px;
+  margin: 0 auto;
+  font-family: var(--reader-font-family, Inter, Segoe UI, sans-serif);
+  font-size: var(--reader-font-size, 16px);
+  line-height: var(--reader-line-height, 1.65);
+}
+
+.markdown-body pre {
+  border-radius: 0.5rem;
+}
+
+.setting-row {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.setting-row > span {
+  color: rgb(71 85 105);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+:root[data-theme="dark"] .setting-row > span {
+  color: rgb(148 163 184);
+}
+
+.setting-row select,
+.setting-row input[type="range"] {
+  width: 100%;
+}
+
+.setting-row select {
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.4rem;
+  background: white;
+  color: rgb(30 41 59);
+  padding: 0.45rem 0.6rem;
+}
+
+:root[data-theme="dark"] .setting-row select {
+  background: rgb(15 23 42);
+  border-color: rgb(51 65 85);
+  color: rgb(226 232 240);
+}
+
+.manager-button {
+  text-align: left;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.4rem;
+  background: white;
+  color: rgb(51 65 85);
+  padding: 0.5rem 0.65rem;
+  font-size: 0.85rem;
+  transition: background-color 120ms ease;
+}
+
+.manager-button:hover {
+  background: rgb(248 250 252);
+}
+
+:root[data-theme="dark"] .manager-button {
+  background: rgb(15 23 42);
+  border-color: rgb(51 65 85);
+  color: rgb(226 232 240);
+}
+
+:root[data-theme="dark"] .manager-button:hover {
+  background: rgb(30 41 59);
+}
