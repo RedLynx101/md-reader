@@ -104,3 +104,34 @@ body {
 :root[data-theme="dark"] .manager-button:hover {
   background: rgb(30 41 59);
 }
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  border: 0;
+  background: rgb(2 6 23 / 0.35);
+  padding: 0;
+}
+
+.settings-panel {
+  position: fixed;
+  top: 4.5rem;
+  right: 1rem;
+  z-index: 30;
+  width: min(420px, calc(100vw - 2rem));
+  max-height: calc(100vh - 5.5rem);
+  overflow: auto;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.75rem;
+  background: white;
+  padding: 1rem;
+  box-shadow:
+    0 14px 30px rgb(15 23 42 / 0.2),
+    0 4px 10px rgb(15 23 42 / 0.1);
+}
+
+:root[data-theme="dark"] .settings-panel {
+  border-color: rgb(51 65 85);
+  background: rgb(2 6 23);
+}

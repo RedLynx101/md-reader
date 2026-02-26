@@ -158,6 +158,23 @@ function App() {
     };
   }, [settings.theme]);
 
+  useEffect(() => {
+    if (!isSettingsOpen) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsSettingsOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isSettingsOpen]);
+
   async function persistSettings(nextSettings: Settings) {
     setSettings(nextSettings);
     if (!store) {
@@ -230,13 +247,20 @@ function App() {
     <main className="app-shell min-h-screen">
       <header className="border-b border-slate-200/80 px-4 py-3 dark:border-slate-700/70">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
-          <div>
-            <h1 className="text-base font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-              Markdown Reader
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Clean preview for local `.md` files
-            </p>
+          <div className="flex items-center gap-3">
+            <img
+              alt="Markdown Reader icon"
+              className="h-8 w-8 rounded-md border border-slate-200 object-cover dark:border-slate-700"
+              src="/icon.png"
+            />
+            <div>
+              <h1 className="text-base font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                Markdown Reader
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Clean preview for local `.md` files
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -249,7 +273,11 @@ function App() {
               Open File
             </button>
             <button
-              className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              className={`rounded-md border px-3 py-1.5 text-sm shadow-sm transition ${
+                isSettingsOpen
+                  ? "border-slate-500 bg-slate-100 text-slate-800 dark:border-slate-400 dark:bg-slate-700 dark:text-slate-100"
+                  : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              }`}
               onClick={() => setIsSettingsOpen((current) => !current)}
               type="button"
             >
@@ -259,7 +287,7 @@ function App() {
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 px-4 py-4 md:grid-cols-[1fr,320px]">
+      <div className="mx-auto w-full max-w-6xl px-4 py-4">
         <section className="flex min-h-[70vh] flex-col rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div className="border-b border-slate-200 px-4 py-2 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
             {doc?.path ?? "No file loaded yet"}
@@ -291,129 +319,149 @@ function App() {
             )}
           </div>
         </section>
-
-        <aside
-          className={`rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition dark:border-slate-700 dark:bg-slate-900 ${
-            isSettingsOpen ? "block" : "hidden md:block"
-          }`}
-        >
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Reader Settings
-          </h2>
-
-          <div className="mt-4 space-y-3 text-sm">
-            <label className="setting-row">
-              <span>Theme</span>
-              <select
-                value={settings.theme}
-                onChange={(event) => {
-                  void persistSettings({
-                    ...settings,
-                    theme: event.target.value as ThemeMode,
-                  });
-                }}
-              >
-                <option value="system">System</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
-            </label>
-
-            <label className="setting-row">
-              <span>Font</span>
-              <select
-                value={settings.fontFamily}
-                onChange={(event) => {
-                  void persistSettings({
-                    ...settings,
-                    fontFamily: event.target.value as FontFamily,
-                  });
-                }}
-              >
-                <option value="inter">Inter</option>
-                <option value="segoe">Segoe UI</option>
-                <option value="georgia">Georgia</option>
-                <option value="jetbrains">JetBrains Mono</option>
-              </select>
-            </label>
-
-            <label className="setting-row">
-              <span>Font size</span>
-              <input
-                max={28}
-                min={12}
-                step={1}
-                type="range"
-                value={settings.fontSize}
-                onChange={(event) => {
-                  void persistSettings({
-                    ...settings,
-                    fontSize: Number(event.target.value),
-                  });
-                }}
-              />
-            </label>
-
-            <label className="setting-row">
-              <span>Line height</span>
-              <input
-                max={2.2}
-                min={1.2}
-                step={0.05}
-                type="range"
-                value={settings.lineHeight}
-                onChange={(event) => {
-                  void persistSettings({
-                    ...settings,
-                    lineHeight: Number(event.target.value),
-                  });
-                }}
-              />
-            </label>
-          </div>
-
-          <hr className="my-4 border-slate-200 dark:border-slate-700" />
-
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            App Manager
-          </h3>
-          <div className="mt-3 flex flex-col gap-2">
-            <button
-              className="manager-button"
-              onClick={() => {
-                void onCheckForUpdates();
-              }}
-              type="button"
-            >
-              Check for updates
-            </button>
-            <button
-              className="manager-button"
-              onClick={() => {
-                void openUrl("ms-settings:appsfeatures");
-              }}
-              type="button"
-            >
-              Uninstall from Windows Settings
-            </button>
-            <button
-              className="manager-button"
-              onClick={() => {
-                void openUrl("https://github.com/tauri-apps/tauri");
-              }}
-              type="button"
-            >
-              Open release/help page
-            </button>
-          </div>
-
-          {updateStatus && (
-            <p className="mt-3 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-              {updateStatus}
-            </p>
-          )}
-        </aside>
       </div>
+
+      {isSettingsOpen && (
+        <>
+          <button
+            aria-label="Close settings panel"
+            className="settings-backdrop"
+            onClick={() => setIsSettingsOpen(false)}
+            type="button"
+          />
+          <aside
+            aria-label="Reader settings"
+            aria-modal="true"
+            className="settings-panel"
+            role="dialog"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                Reader Settings
+              </h2>
+              <button
+                className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                onClick={() => setIsSettingsOpen(false)}
+                type="button"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-3 text-sm">
+              <label className="setting-row">
+                <span>Theme</span>
+                <select
+                  value={settings.theme}
+                  onChange={(event) => {
+                    void persistSettings({
+                      ...settings,
+                      theme: event.target.value as ThemeMode,
+                    });
+                  }}
+                >
+                  <option value="system">System</option>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+              </label>
+
+              <label className="setting-row">
+                <span>Font</span>
+                <select
+                  value={settings.fontFamily}
+                  onChange={(event) => {
+                    void persistSettings({
+                      ...settings,
+                      fontFamily: event.target.value as FontFamily,
+                    });
+                  }}
+                >
+                  <option value="inter">Inter</option>
+                  <option value="segoe">Segoe UI</option>
+                  <option value="georgia">Georgia</option>
+                  <option value="jetbrains">JetBrains Mono</option>
+                </select>
+              </label>
+
+              <label className="setting-row">
+                <span>Font size</span>
+                <input
+                  max={28}
+                  min={12}
+                  step={1}
+                  type="range"
+                  value={settings.fontSize}
+                  onChange={(event) => {
+                    void persistSettings({
+                      ...settings,
+                      fontSize: Number(event.target.value),
+                    });
+                  }}
+                />
+              </label>
+
+              <label className="setting-row">
+                <span>Line height</span>
+                <input
+                  max={2.2}
+                  min={1.2}
+                  step={0.05}
+                  type="range"
+                  value={settings.lineHeight}
+                  onChange={(event) => {
+                    void persistSettings({
+                      ...settings,
+                      lineHeight: Number(event.target.value),
+                    });
+                  }}
+                />
+              </label>
+            </div>
+
+            <hr className="my-4 border-slate-200 dark:border-slate-700" />
+
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              App Manager
+            </h3>
+            <div className="mt-3 flex flex-col gap-2">
+              <button
+                className="manager-button"
+                onClick={() => {
+                  void onCheckForUpdates();
+                }}
+                type="button"
+              >
+                Check for updates
+              </button>
+              <button
+                className="manager-button"
+                onClick={() => {
+                  void openUrl("ms-settings:appsfeatures");
+                }}
+                type="button"
+              >
+                Uninstall from Windows Settings
+              </button>
+              <button
+                className="manager-button"
+                onClick={() => {
+                  void openUrl("https://github.com/tauri-apps/tauri");
+                }}
+                type="button"
+              >
+                Open release/help page
+              </button>
+            </div>
+
+            {updateStatus && (
+              <p className="mt-3 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                {updateStatus}
+              </p>
+            )}
+          </aside>
+        </>
+      )}
     </main>
   );
 }
