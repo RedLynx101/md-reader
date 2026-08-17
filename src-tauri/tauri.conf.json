@@ -31,7 +31,7 @@
     "category": "Productivity",
     "publisher": "Noah H",
     "shortDescription": "A clean and professional Markdown reader for Windows 11.",
-    "longDescription": "Markdown Reader opens local markdown files with a polished and human-readable interface, plus built-in settings and updater support.",
+    "longDescription": "Markdown Reader opens local markdown files with a focused, human-readable interface and persistent reading preferences.",
     "fileAssociations": [
       {
         "ext": ["md", "markdown", "mdown", "mkd"],
@@ -55,14 +55,5 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
-  },
-  "plugins": {
-    "updater": {
-      "active": false,
-      "endpoints": [
-        "https://updates.example.com/markdown-reader/{{target}}/{{arch}}/{{current_version}}"
-      ],
-      "pubkey": "REPLACE_WITH_YOUR_UPDATER_PUBLIC_KEY"
-    }
   }
 }

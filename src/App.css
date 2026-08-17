@@ -46,6 +46,36 @@ body {
   border-radius: 0.5rem;
 }
 
+/* github-markdown-css follows the operating-system theme. Explicit reader settings win. */
+:root[data-theme="light"] .markdown-body table tr {
+  background: #ffffff;
+  color: #1f2328;
+}
+
+:root[data-theme="light"] .markdown-body table tr:nth-child(2n) {
+  background: #f6f8fa;
+}
+
+:root[data-theme="light"] .markdown-body table th,
+:root[data-theme="light"] .markdown-body table td {
+  border-color: #d0d7de;
+}
+
+.browser-preview-note {
+  margin: 0;
+  border-bottom: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  color: rgb(71 85 105);
+  padding: 0.55rem 1rem;
+  font-size: 0.75rem;
+}
+
+:root[data-theme="dark"] .browser-preview-note {
+  border-color: rgb(51 65 85);
+  background: rgb(15 23 42);
+  color: rgb(148 163 184);
+}
+
 .setting-row {
   display: grid;
   gap: 0.5rem;

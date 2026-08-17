@@ -3,7 +3,6 @@ import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { load, type Store } from "@tauri-apps/plugin-store";
-import { check } from "@tauri-apps/plugin-updater";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "github-markdown-css/github-markdown.css";
@@ -34,6 +33,37 @@ const DEFAULT_SETTINGS: Settings = {
 };
 const DEFAULT_STORE_SETTINGS: Record<string, unknown> = {
   ...DEFAULT_SETTINGS,
+};
+const PROJECT_URL = "https://github.com/RedLynx101/md-reader";
+const IS_TAURI = "__TAURI_INTERNALS__" in window;
+const PREVIEW_DOCUMENT: MarkdownDocument = {
+  path: "Browser preview · Native file access is available in the Windows app",
+  fileName: "welcome.md",
+  content: `# Markdown Reader
+
+A focused desktop reader for local Markdown files.
+
+> Open a document from Windows Explorer or use **Open File** in the installed app. This browser preview uses a built-in sample and does not receive local file access.
+
+## The useful parts
+
+- GitHub-Flavored Markdown, tables, task lists, and fenced code
+- System, light, and dark themes
+- Adjustable typeface, text size, and line height
+- Persistent local preferences
+- Native \`.md\` file association on Windows
+
+| Boundary | Behavior |
+| --- | --- |
+| Files | Read locally after an explicit open action |
+| Rendering | Raw HTML is not enabled |
+| Network | No document content is uploaded by the app |
+
+\`\`\`ts
+const purpose = "read the file, then get out of the way";
+\`\`\`
+
+Use **Settings** to change the reading surface.`,
 };
 
 const FONT_FAMILY_MAP: Record<FontFamily, string> = {
@@ -74,11 +104,16 @@ function App() {
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [doc, setDoc] = useState<MarkdownDocument | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [updateStatus, setUpdateStatus] = useState<string | null>(null);
 
   const resolvedTheme = resolveTheme(settings.theme);
   useEffect(() => {
     void (async () => {
+      if (!IS_TAURI) {
+        setDoc(PREVIEW_DOCUMENT);
+        setIsBooting(false);
+        return;
+      }
+
       const loadedStore = await load(SETTINGS_FILE, {
         defaults: DEFAULT_STORE_SETTINGS,
         autoSave: 150,
@@ -206,6 +241,11 @@ function App() {
   }
 
   async function onOpenFile() {
+    if (!IS_TAURI) {
+      setErrorMessage("Local file access is available in the installed Windows app.");
+      return;
+    }
+
     const selected = await open({
       title: "Open Markdown File",
       multiple: false,
@@ -223,24 +263,12 @@ function App() {
     await loadMarkdownPath(selected);
   }
 
-  async function onCheckForUpdates() {
-    setUpdateStatus("Checking for updates...");
-    try {
-      const update = await check();
-      if (!update) {
-        setUpdateStatus("You are already on the latest version.");
-        return;
-      }
-
-      setUpdateStatus(`Downloading v${update.version}...`);
-      await update.downloadAndInstall();
-      await update.close();
-      setUpdateStatus(
-        `v${update.version} installed. Restart Markdown Reader to finish.`,
-      );
-    } catch (error) {
-      setUpdateStatus(`Update failed: ${String(error)}`);
+  async function openExternal(url: string) {
+    if (IS_TAURI) {
+      await openUrl(url);
+      return;
     }
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   return (
@@ -264,13 +292,14 @@ function App() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              aria-describedby={!IS_TAURI ? "browser-preview-note" : undefined}
               className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               onClick={() => {
                 void onOpenFile();
               }}
               type="button"
             >
-              Open File
+              {IS_TAURI ? "Open File" : "Desktop app required"}
             </button>
             <button
               className={`rounded-md border px-3 py-1.5 text-sm shadow-sm transition ${
@@ -292,6 +321,12 @@ function App() {
           <div className="border-b border-slate-200 px-4 py-2 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
             {doc?.path ?? "No file loaded yet"}
           </div>
+
+          {!IS_TAURI ? (
+            <p className="browser-preview-note" id="browser-preview-note" role="note">
+              Public preview. Local files never enter this browser surface.
+            </p>
+          ) : null}
 
           <div className="flex-1 overflow-auto p-6">
             {isBooting || isLoadingFile ? (
@@ -422,43 +457,39 @@ function App() {
             <hr className="my-4 border-slate-200 dark:border-slate-700" />
 
             <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              App Manager
+              Project
             </h3>
             <div className="mt-3 flex flex-col gap-2">
               <button
                 className="manager-button"
                 onClick={() => {
-                  void onCheckForUpdates();
+                  void openExternal(PROJECT_URL);
                 }}
                 type="button"
               >
-                Check for updates
+                Open source repository
               </button>
               <button
                 className="manager-button"
                 onClick={() => {
-                  void openUrl("ms-settings:appsfeatures");
+                  void openExternal(`${PROJECT_URL}/issues`);
                 }}
                 type="button"
               >
-                Uninstall from Windows Settings
+                Report an issue
               </button>
-              <button
-                className="manager-button"
-                onClick={() => {
-                  void openUrl("https://github.com/tauri-apps/tauri");
-                }}
-                type="button"
-              >
-                Open release/help page
-              </button>
+              {IS_TAURI ? (
+                <button
+                  className="manager-button"
+                  onClick={() => {
+                    void openUrl("ms-settings:appsfeatures");
+                  }}
+                  type="button"
+                >
+                  Open Windows app settings
+                </button>
+              ) : null}
             </div>
-
-            {updateStatus && (
-              <p className="mt-3 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                {updateStatus}
-              </p>
-            )}
           </aside>
         </>
       )}
